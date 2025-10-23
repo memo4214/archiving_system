@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+  <meta charset="UTF-8">
+  <title>Add Book</title>
+
+  <!--CSS link  -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/books.css') }}">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 2rem 0;
+    }
+
+    .dashboard-container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      width: 90%;
+      max-width: 600px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    h2 {
+      margin-bottom: 1.5rem;
+      color: #333;
+      text-align: center;
+    }
+
+    /* Flash messages */
+    .flash-messages {
+      margin-bottom: 20px;
+    }
+
+    .flash {
+      padding: 12px;
+      border-radius: 6px;
+      margin: 8px 0;
+      font-weight: bold;
+      text-align: center;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease;
+    }
+
+    .flash.success {
+      background-color: #e6fffa;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+    }
+
+    .flash.error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    /* Form */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    form input[type="text"],
+    form input[type="number"],
+    form input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border 0.3s;
+    }
+
+    form input:focus {
+      border-color: #667eea;
+      outline: none;
+    }
+
+    form button {
+      padding: 12px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    form button:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+    }
+
+    /* Back link */
+    a.back-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      text-decoration: none;
+      color: #667eea;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    a.back-link:hover {
+      color: #764ba2;
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <h2> Add New Book</h2>
+    <form method="POST" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Book Title" required>
+      <input type="text" name="author" placeholder="Author" required>
+      <input type="number" name="year" placeholder="Year" required>
+      <input type="text" name="category" placeholder="Category" required>
+      <input type="text" name="subcategory" placeholder="Subcategory" required> 
+      <input type="file" name="image" accept="image/*">
+      <button type="submit">Add Book</button>
+    </form>
+
+    <a href="{{ url_for('dashboard') }}" class="back-link">⬅ Back to Dashboard</a>
+  </div>
+
+  <!-- Auto dismiss flash messages -->
+  <script>
+    setTimeout(function() {
+      const flashes = document.querySelectorAll('.flash');
+      flashes.forEach(flash => {
+        flash.style.transition = "opacity 0.5s ease";
+        flash.style.opacity = "0";
+        setTimeout(() => flash.remove(), 500);
+      });
+    }, 3000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+  <meta charset="UTF-8">
+  <title>Edit Book</title>
+
+  <!-- CSS link -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/edit.css') }}">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 2rem 0;
+    }
+
+    .dashboard-container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      width: 90%;
+      max-width: 600px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    h2 {
+      margin-bottom: 1.5rem;
+      color: #333;
+      text-align: center;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    form input[type="text"],
+    form input[type="number"],
+    form input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border 0.3s;
+    }
+
+    form input:focus {
+      border-color: #667eea;
+      outline: none;
+    }
+
+    form button {
+      padding: 12px;
+      background: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    form button:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+    }
+
+    a.back-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      text-decoration: none;
+      color: #667eea;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    a.back-link:hover {
+      color: #764ba2;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h2> Edit Book</h2>
+    <form method="POST" enctype="multipart/form-data">
+      <input type="text" name="title" value="{{ book.title }}" placeholder="Book Title" required>
+      <input type="text" name="author" value="{{ book.author }}" placeholder="Author" required>
+      <input type="number" name="year" value="{{ book.year }}" placeholder="Year" required>
+      <input type="text" name="category" value="{{ book.category }}" placeholder="Category" required>
+      <input type="text" name="subcategory" value="{{ book.subcategory }}" placeholder="Subcategory" required>
+      
+      {% if book.image %}
+        <p>Current Image:</p>
+        <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="Book Image" style="width:100px; height:140px; border-radius:6px; margin-bottom:10px;">
+      {% endif %}
+      
+      <input type="file" name="image" accept="image/*">
+      <button type="submit">Update Book</button>
+    </form>
+
+    <a href="{{ url_for('show_books') }}" class="back-link">⬅ Back to Books</a>
+  </div>
+</body>
+</html>

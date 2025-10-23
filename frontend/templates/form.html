@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <meta charset="UTF-8">
+    <title>Add User</title>
+   
+    <!--CSS link -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="form-container">
+    <h2>Add New User</h2>
+    <form action="/add" method="POST">
+      <label for="username">Username:</label>
+      <input type="text" name="username" required>
+
+      <label for="email">Email:</label>
+      <input type="email" name="email" required>
+
+      <label for="password">Password:</label>
+      <input type="password" name="password" required>
+
+      <label for="role">Role:</label>
+      <select name="role" required>
+        <option value="admin">Admin</option>
+        <option value="editor">Editor</option>
+        <option value="archiver">Archiver</option>
+      </select>
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+</body>
+</html>

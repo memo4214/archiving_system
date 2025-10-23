@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+  <meta charset="UTF-8">
+  <title>Login page</title>
+  <!-- CSS link -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <form action="/login" method="POST">
+  <!-- Username -->
+  <div class="input-group">
+    <span class="icon">👤</span>
+    <input type="text" name="username" placeholder="Username" required>
+  </div>
+
+  <!-- Password -->
+  <div class="input-group">
+    <span class="icon">🔒</span>
+    <input type="password" id="password" name="password" placeholder="Password" required>
+    <span class="toggle-password" onclick="togglePassword()">👁</span>
+  </div>
+
+  <button type="submit">Log in</button>
+
+</form>
+
+    <!-- Change Language button -->
+    <div class="lang-switch">
+      <button onclick="switchLang()"> Change Language</button>
+    </div>
+  </div>
+
+  <script>
+    // show / hide password
+    function togglePassword() {
+      const passwordField = document.getElementById("password");
+      if (passwordField.type === "password") {
+        passwordField.type = "text";
+      } else {
+        passwordField.type = "password";
+      }
+    }
+
+    // switch language
+    function switchLang() {
+      alert("هنا ممكن نضيف منطق لتبديل اللغة (عربي/إنكليزي)");
+    }
+  </script>
+</body>
+</html>

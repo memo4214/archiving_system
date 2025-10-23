@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+  <meta charset="UTF-8">
+  <title>Books List</title>
+
+  <!--CSS link  -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/books.css') }}">
+  <style>
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+      margin-top: 1.5rem;
+    }
+
+    .book-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      padding: 1.2rem;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+
+    .book-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    }
+
+    .book-card img {
+      width: 110px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .book-card h3 {
+      margin: 0.5rem 0;
+      font-size: 1.15rem;
+      color: #333;
+    }
+
+    .book-card p {
+      margin: 4px 0;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    /* Action buttons */
+    .card-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .card-actions a {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .edit-btn {
+      background: #667eea;
+      color: #fff;
+    }
+
+    .edit-btn:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+    }
+
+    .delete-btn {
+      background: #e53e3e;
+      color: #fff;
+    }
+
+    .delete-btn:hover {
+      background: #c53030;
+      transform: translateY(-2px);
+    }
+
+    .archive-btn {
+      background: #38a169;
+      color: #fff;
+    }
+
+    .archive-btn:hover {
+      background: #2f855a;
+      transform: translateY(-2px);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 25px;
+      text-decoration: none;
+      color: #667eea;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #764ba2;
+    }
+
+    /* Search form */
+    .search-form {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-form input,
+    .search-form select,
+    .search-form button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+    }
+
+    .search-form button {
+      background: #667eea;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    .search-form button:hover {
+      background: #5a67d8;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <h2>Books List</h2>
+
+    <!-- ✅ Search form (English) -->
+    <form method="GET" action="{{ url_for('search_books') }}" class="search-form">
+      <input type="text" name="query" placeholder="Search here..." required>
+      <select name="filter_by">
+        <option value="all"> All</option>
+        <option value="title">Title</option>
+        <option value="author">Author</option>
+        <option value="year">Year</option>
+        <option value="category">Category</option>
+        <option value="subcategory">Subcategory</option>
+      </select>
+      <button type="submit">Search</button>
+    </form>
+
+    {% if books %}
+      <div class="books-grid">
+        {% for book in books %}
+        <div class="book-card">
+          {% if book.image %}
+            <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="Book Image">
+          {% else %}
+            <img src="{{ url_for('static', filename='images/no-image.png') }}" alt="No Image">
+          {% endif %}
+          <h3>{{ book.title }}</h3>
+          <p><strong>Author:</strong> {{ book.author }}</p>
+          <p><strong>Year:</strong> {{ book.year }}</p>
+          <p><strong>Category:</strong> {{ book.category }}</p>
+          <p><strong>Subcategory:</strong> {{ book.subcategory }}</p>
+
+          <!-- Action buttons -->
+          <div class="card-actions">
+            {% if role in ["admin", "data_entry"] %}
+              <a href="{{ url_for('edit_book', book_id=book._id) }}" class="edit-btn"> Edit</a>
+              <a href="{{ url_for('delete_book', book_id=book._id) }}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this book?')"> Delete</a>
+            {% endif %}
+
+            {% if role in ["admin", "archiver"] %}
+              <a href="{{ url_for('archive_book', book_id=book._id) }}" class="archive-btn" onclick="return confirm('Archive this book?')"> Archive</a>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No books found.</p>
+    {% endif %}
+
+    <a href="{{ url_for('dashboard') }}" class="back-link">⬅ Back to Dashboard</a>
+  </div>
+</body>
+</html>

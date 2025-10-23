@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <!-- CSS link -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <h2>Welcome, {{ username }} </h2>
+    <p>Your role: <strong>{{ role }}</strong></p>
+
+    <div class="dashboard-buttons">
+      {% if role == "admin" %}
+        <a href="{{ url_for('add_user') }}"> Add User</a>
+        <a href="{{ url_for('show_users') }}"> Show Users</a>
+        <a href="{{ url_for('add_book') }}"> Add Book</a>
+        <a href="{{ url_for('show_books') }}"> Show Books</a>
+        <a href="{{ url_for('archived_books') }}"> Archived Books</a>
+
+      {% elif role == "editor" %}
+        <a href="{{ url_for('add_book') }}"> Add Book</a>
+        <a href="{{ url_for('show_books') }}"> Show Books</a>
+
+      {% elif role == "archiver" %}
+        <a href="{{ url_for('show_books') }}"> Show Books</a>
+        <a href="{{ url_for('archived_books') }}">🗄️ Archived Books</a>
+
+      {% else %}
+        <p>You don’t have permissions to access this dashboard.</p>
+      {% endif %}
+
+      <a href="{{ url_for('logout') }}"> Logout</a>
+    </div>
+  </div>
+
+  <!-- Auto dismiss flash messages -->
+  <script>
+    setTimeout(function() {
+      const flashes = document.querySelectorAll('.flash');
+      flashes.forEach(flash => {
+        flash.style.transition = "opacity 0.5s ease";
+        flash.style.opacity = "0";
+        setTimeout(() => flash.remove(), 500);
+      });
+    }, 3000);
+  </script>
+</body>
+</html>

@@ -12,7 +12,7 @@
       }
     }
   ],
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/backend/app" }
+  "routes": [
+    { "src": "/(.*)", "dest": "backend/app.py" }
   ]
 }

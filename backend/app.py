@@ -6,6 +6,8 @@ from functools import wraps
 from bson.objectid import ObjectId
 import os
 import uuid  # Generate unique filenames for images
+import pymongo.errors
+from models.datasets import hunger_games_dataset
 
 # App Configuration
 
@@ -16,13 +18,185 @@ UPLOADS_DIR = os.path.join(STATIC_DIR, "uploads")
 
 app = Flask(__name__, template_folder=TEMPLATES_DIR, static_folder=STATIC_DIR)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret")  
-# Database Configuration
 
-client = MongoClient("mongodb://localhost:27017/")
-db = client["archiving_system"]
-users_collection = db["users"]
-books_collection = db["books"]
-archived_books_collection = db["archived_books"]
+# Dummy data for fallback when database connection fails
+dummy_books = [
+    {
+        "_id": ObjectId("68f127fa1e0ebbb59b464250"),
+        "title": "Powerless",
+        "author": "Matthew Cody",
+        "year": "2011",
+        "category": "Children / Middle-grade / Action & Adventure",
+        "subcategory": "Supers of Noble's Green",
+        "image": "eed690343b6748c69606b127c7559798_9781665954884.jpg"
+    },
+    {
+        "_id": ObjectId("68f234d84bf88416046e55a4"),
+        "title": "Angels & Demons",
+        "author": "Dan Brown",
+        "year": "2000",
+        "category": "Fiction",
+        "subcategory": "Mystery, Thriller, Conspiracy, or Religious Thriller",
+        "image": "d983586416d04602b16645ccd5ef9079_AngelsAndDemons.jpg"
+    },
+    {
+        "_id": ObjectId("68f235b34bf88416046e55a5"),
+        "title": "Deception Point",
+        "author": "Dan Brown",
+        "year": "2001",
+        "category": "Fiction",
+        "subcategory": "Techno-Thriller / Political Thriller",
+        "image": "6209c61a1832470a9b0d18cfc03d8d00_DeceptionPointDanBrownNovel.jpg"
+    },
+    {
+        "_id": ObjectId("68f236364bf88416046e55a6"),
+        "title": "Consent to Kill",
+        "author": "Vince Flynn",
+        "year": "2005",
+        "category": "Fiction",
+        "subcategory": "Political Thriller / Espionage",
+        "image": "a2eeb7cd968046fead8f223978f8fe36_V_Flynn_Consent_to_Kill.jpg"
+    },
+    {
+        "_id": ObjectId("68f2371b4bf88416046e55a7"),
+        "title": "Sins of Empire",
+        "author": "Brian McClellan",
+        "year": "2017",
+        "category": "Fiction",
+        "subcategory": "Fantasy / Epic Fantasy",
+        "image": "9187b349e1674e3b925dccced389a719_Sins_of_Empire.jpg"
+    },
+    {
+        "_id": ObjectId("68f238804bf88416046e55a8"),
+        "title": "The Da Vinci Code",
+        "author": "Dan Brown",
+        "year": "2003",
+        "category": "Fiction",
+        "subcategory": "Mystery / Thriller",
+        "image": "ecdaea9114e74921a139436c40856e9f_DaVinciCode.jpg"
+    },
+    {
+        "_id": ObjectId("68f239a64bf88416046e55aa"),
+        "title": "The Kite Runner",
+        "author": "Khaled Hosseini",
+        "year": "2003",
+        "category": "Fiction",
+        "subcategory": "Drama / Historical Fiction",
+        "image": "0e7ce46f58844d58a00acb69fd55994f_kite.jpg"
+    },
+    {
+        "_id": ObjectId("68f23aa24bf88416046e55ab"),
+        "title": "A Game of Thrones",
+        "author": "George R. R. Martin",
+        "year": "1996",
+        "category": "Fiction",
+        "subcategory": "Fantasy / Epic Fantasy",
+        "image": "50b447c9d97a482e99e4e16f5007d636_AGameOfThrones.jpg"
+    }
+]
+
+# Archived books collection data
+dummy_archived_books = [
+    {
+        "_id": ObjectId("68f238ee4bf88416046e55a9"),
+        "title": "The Hunger Games",
+        "author": "Suzanne Collins",
+        "year": "2008",
+        "category": "Fiction",
+        "subcategory": "Dystopian / Adventure",
+        "image": "cb0dc430c7494baf8d5b1648784eb135_the.jpg"
+    }
+]
+
+dummy_users = [
+    {
+        "_id": ObjectId("68efd975cad8469cf153509a"),
+        "username": "mohannad_211180",
+        "email": "mohannad@gmail.com",
+        "role": "admin",
+        "password": "scrypt:32768:8:1$zJuVqdAD5FqWySYQ$830d1aeed47a887731f22be346547abed4230a585c5c56b529753e2bf579ce8488045aa640f531755b27f7ab041e30d84d25ca014df322e0bd988ad82bbd747e"
+    },
+    {
+        "_id": ObjectId("68f0bfe9d45e9a02d9287b7f"),
+        "username": "laila",
+        "email": "laila@gmail.com",
+        "role": "editor",
+        "password": "scrypt:32768:8:1$194YGljS9hInGtnb$faeb8826e1d7de25b2d12e4287b78d21047abfc7d1750aa46d9f10d0d6ea5a7c75a5ed0aed8f338e406b4edda988b24adb7a0ec1d9088a0ece401b44d82e4985"
+    },
+    {
+        "_id": ObjectId("68f10bf100953281c5c37a2f"),
+        "username": "ammar",
+        "email": "ammar@gmail.com",
+        "role": "archiver",
+        "password": "scrypt:32768:8:1$AWH1mP8eLkm311jE$85a1e064d32b40f09c67aaf1d4e0de4304193b4206b04eac7f4df0bdc9a64c3a5bb56c22bc4c40301c5ab76433ab492cd01bf3a51bb429b1fce8481d05913542"
+    },
+    {
+        "_id": ObjectId("68f29a723fbf2fe02c982b39"),
+        "username": "ayham",
+        "email": "ayham@gmail.com",
+        "role": "archiver",
+        "password": "scrypt:32768:8:1$rjBoyPNmuf5jLpkX$b103a89b24d8e7c2de319435f66a1ae81616a62b444d3b2c0be25f893361cf5dba0d44c0e65b7d35883e876e05eebb4cb600a559e48052db883d58909c191afe"
+    }
+]
+
+# Database Configuration
+try:
+    client = MongoClient("mongodb://localhost:27017/", serverSelectionTimeoutMS=5000)
+    # Test the connection
+    client.server_info()
+    print("Connected to MongoDB successfully")
+    db = client["archiving_system"]
+    users_collection = db["users"]
+    books_collection = db["books"]
+    archived_books_collection = db["archived_books"]
+except pymongo.errors.ServerSelectionTimeoutError:
+    print("Warning: Could not connect to MongoDB. Using dummy data instead.")
+    # Create in-memory collections using dummy data
+    from pymongo.collection import Collection
+    class DummyCollection:
+        def __init__(self, data):
+            self.data = data
+            
+        def find(self, query=None):
+            # Simple implementation for find
+            if query is None:
+                return self.data
+            return [item for item in self.data if all(item.get(k) == v for k, v in query.items())]
+            
+        def find_one(self, query):
+            # Simple implementation for find_one
+            results = self.find(query)
+            return results[0] if results else None
+            
+        def insert_one(self, document):
+            # Simple implementation for insert_one
+            if "_id" not in document:
+                document["_id"] = ObjectId()
+            self.data.append(document)
+            return type('obj', (object,), {'inserted_id': document["_id"]})
+            
+        def update_one(self, query, update):
+            # Simple implementation for update_one
+            for i, item in enumerate(self.data):
+                if all(item.get(k) == v for k, v in query.items()):
+                    if "$set" in update:
+                        for k, v in update["$set"].items():
+                            self.data[i][k] = v
+                    break
+            return type('obj', (object,), {'modified_count': 1})
+            
+        def delete_one(self, query):
+            # Simple implementation for delete_one
+            for i, item in enumerate(self.data):
+                if all(item.get(k) == v for k, v in query.items()):
+                    del self.data[i]
+                    return type('obj', (object,), {'deleted_count': 1})
+            return type('obj', (object,), {'deleted_count': 0})
+    
+    # Create dummy collections
+    users_collection = DummyCollection(dummy_users)
+    books_collection = DummyCollection(dummy_books)
+    archived_books_collection = DummyCollection(dummy_archived_books)
 
 # File Upload Configuration
 
